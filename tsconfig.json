@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+      "target": "ESNext",
+      "module": "NodeNext",
+      "rootDir": "./src",
+      "baseUrl": "./src",
+      "paths": {
+          "@discordWebDownloader/*": ["*"]
+      },
+      "resolveJsonModule": true,
+      "outDir": "./dist",
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "skipLibCheck": true
+  },
+}

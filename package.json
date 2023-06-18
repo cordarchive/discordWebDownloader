@@ -1,0 +1,27 @@
+{
+  "name": "discordwebdownloader",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "rimraf dist && tsc && tsc-alias -p tsconfig.json",
+    "start": "node ./dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL",
+  "dependencies": {
+    "js-beautify": "^1.14.7"
+  },
+  "devDependencies": {
+    "@types/js-beautify": "^1.13.3",
+    "@types/node": "^18.11.16",
+    "rimraf": "^3.0.2",
+    "tsc-alias": "^1.8.2",
+    "typescript": "^4.9.4"
+  },
+  "engines": {
+    "node": ">=14.16"
+  }
+}
