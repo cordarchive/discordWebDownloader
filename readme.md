@@ -8,3 +8,4 @@ TODO:
 
 - Download from imported index.html
 - Download from wayback machine when Discord does not serve files anymore (useful for v2 clients, aka 2015-2018 ones, although you need to frankenstein assets from 2018 v6 clients I think idk haven't tried yet lmao; Sidenote, I have managed to bring 2015 client back using Wayback Machine only, turns out Discord does not use a lot of Javascript files during early days.)
+- (for fun) Download v2 clients from https://hummus.sys42.net/ when wayback fails
