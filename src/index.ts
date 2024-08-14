@@ -1,5 +1,5 @@
-import path from "node:path";
-import { URL } from "node:url";
+import path from "path";
+import { URL } from "url";
 
 import { parseJS } from "@discordWebDownloader/utils/parseJS.js";
 import {
