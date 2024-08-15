@@ -7,6 +7,21 @@ import {
   fetchAssets,
 } from "@discordWebDownloader/utils/download.js";
 
+const indexHtmlScrapeLinks = [
+  {
+    2015: "https://web.archive.org/web/*/discord.gg/*",
+    2020: "https://web.archive.org/web/*/discord.com/app"
+  },
+  {
+    2015: "https://web.archive.org/web/*/https://ptb.discordapp.com/channels/*",
+    2020: "https://web.archive.org/web/*/https://ptb.discord.com/channels/*"
+  },
+  {
+    2015: "https://web.archive.org/web/*/https://canary.discordapp.com/channels/*",
+    2020: "https://web.archive.org/web/*/https://canary.discord.com/channels/*"
+  }
+]
+
 export async function loopMatchingAssets(assets: any[], depth: number) {
   if (assets) {
     assets.forEach((element, index, array) => {
