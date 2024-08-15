@@ -1,11 +1,19 @@
 # Discord Web Downloader
 
-Rewrite of the old Discord-Web-Build-Archiver using Javascript. Possible C# rewrite soon I hope because bruh.
+Rewrite of the old Discord-Web-Build-Archiver using Javascript.
 
 Currently WIP, it gets current Canary index.html and downloads the rest i guess. Improvements needed.
 
 TODO:
-
-- Download from imported index.html
-- Download from wayback machine when Discord does not serve files anymore (useful for v2 clients, aka 2015-2018 ones, although you need to frankenstein assets from 2018 v6 clients I think idk haven't tried yet lmao; Sidenote, I have managed to bring 2015 client back using Wayback Machine only, turns out Discord does not use a lot of Javascript files during early days.)
-- Upload to archive.org
+- Scraping index.htmls from: 
+  - `https://web.archive.org/web/*/discord.gg*` (2015-2020)
+  - `https://web.archive.org/web/*/discord.com/app` (2020-2024)
+  - [Argument switch needed] `https://web.archive.org/web/*/https://ptb.discordapp.com/channels/*` (PTB; 2019-2020)
+  - [Argument switch needed] `https://web.archive.org/web/*/https://ptb.discord.com/channels/*` (PTB; 2020-2024)
+  - [Argument switch needed] `https://web.archive.org/web/*/https://canary.discordapp.com/channels/*` (Canary; 2019-2020)
+  - [Argument switch needed] `https://web.archive.org/web/*/https://canary.discord.com/channels/*` (Canary; 2020-2024)
+  - Imported index.html, one argument switch to enable
+- Download assets from:
+  - `discord.com/assets`
+  - Wayback Machine (useful for v2 clients, aka 2015-2018 ones.)
+- Upload to archive.org (api keys in .env file)
