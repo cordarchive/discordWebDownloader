@@ -91,6 +91,8 @@ if (!process.argv[2] || process.argv[2] === "false") {
 
   for (const capture of captures) {
     globalThis.date = capture.firstCapture;
+    globalThis.depth2Assets = [];
+    globalThis.depth3Assets = [];
     const convertedDate = new Date(Date.parse(capture.firstCapture));
     const waybackDate = `${convertedDate.getFullYear()}${(
       convertedDate.getMonth() + 1
