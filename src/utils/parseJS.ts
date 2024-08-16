@@ -27,10 +27,7 @@ export async function parseJS(
   let url = new URL(asset, "https://discord.com");
   if ((await fetch(url)).status !== 200) {
     url = new URL(
-      asset,
-      `https://web.archive.org/web/${waybackDate}000000${path
-        .extname(asset)
-        .substring(1)}_/https://discordapp.com`
+      `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/${asset}`
     );
   }
 
@@ -45,15 +42,15 @@ export async function parseJS(
   switch (depth) {
     case 1: {
       assets =
-        (await detectAssets(url, asset, getWebpackAssets)) ??
-        (await detectAssets(url, asset, getMediaAssets));
+        (await detectAssets(url, asset, getWebpackAssets, date)) ??
+        (await detectAssets(url, asset, getMediaAssets, date));
       if (assets) {
         globalThis.depth2Assets = [...globalThis.depth2Assets, ...assets];
       }
       break;
     }
     case 2: {
-      assets = await detectAssets(url, asset, getMediaAssets);
+      assets = await detectAssets(url, asset, getMediaAssets, date);
       if (assets) {
         globalThis.depth3Assets = [...globalThis.depth3Assets, ...assets];
       }
