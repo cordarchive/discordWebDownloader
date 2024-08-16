@@ -31,7 +31,12 @@ export async function parseJS(
     );
   }
 
-  const buildNumberCheckResult = await detectAssets(url, asset, getBuildNumber);
+  const buildNumberCheckResult = await detectAssets(
+    url,
+    asset,
+    getBuildNumber,
+    date
+  );
 
   if (buildNumberCheckResult) {
     globalThis.buildNumber = Array.from(buildNumberCheckResult)[1];
