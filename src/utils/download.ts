@@ -7,27 +7,33 @@ import { ReadableStream } from "node:stream/web";
 
 const fetchOptions: RequestInit = {
   cache: "no-cache",
-  referrer: "https://canary.discord.com",
+  referrer: "https://discord.com",
   mode: "cors",
   keepalive: true,
 };
 
-export async function detectAssets(url: URL, regex?: RegExp) {
+const rootFolder = path.join(import.meta.dirname, "..", "..");
+
+export async function detectAssets(url: URL, assetPathname: string, regex?: RegExp, date?: string) {
   let pathname = "";
 
   if (path.extname(url.href) === "") {
     pathname = "index.html";
   } else {
-    pathname = url.pathname;
+    pathname = assetPathname;
   }
 
-  const finished = await fetchAssets(pathname, url);
+  const finished = await fetchAssets(pathname, url, date);
 
   if (!finished) {
     return;
   }
 
-  const body = fs.readFileSync(path.join(process.cwd(), "out", pathname), {
+  const outPath = date
+    ? path.join(rootFolder, "out", date, pathname)
+    : path.join(rootFolder, "out", pathname);
+
+  const body = fs.readFileSync(outPath, {
     encoding: "utf-8",
     flag: "rs+",
   });
@@ -37,14 +43,30 @@ export async function detectAssets(url: URL, regex?: RegExp) {
   }
 }
 
-export async function fetchAssets(pathname: string, url: URL) {
+export async function fetchAssets(pathname: string, url: URL, date?: string) {
   const res = await fetch(url, fetchOptions);
 
   if (!res.ok) {
     return false;
   }
 
-  const file = fs.createWriteStream(path.join(process.cwd(), "out", pathname), {
+  const outPath = date
+    ? path.join(rootFolder, "out", date)
+    : path.join(rootFolder, "out");
+
+  if (!fs.existsSync(path.join(rootFolder, "out"))) {
+    fs.mkdirSync(path.join(rootFolder, "out"));
+  }
+
+  if (!fs.existsSync(outPath)) {
+    fs.mkdirSync(outPath);
+  }
+
+  if (!fs.existsSync(path.join(outPath, "assets"))) {
+    fs.mkdirSync(path.join(outPath, "assets"));
+  }
+
+  const file = fs.createWriteStream(path.join(outPath, pathname), {
     encoding: "utf-8",
     flags: "w+",
   });

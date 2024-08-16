@@ -12,11 +12,13 @@
   "author": "",
   "license": "GPL",
   "dependencies": {
-    "js-beautify": "^1.15.1"
+    "js-beautify": "^1.15.1",
+    "puppeteer": "^23.1.0"
   },
   "devDependencies": {
     "@types/js-beautify": "^1.14.3",
     "@types/node": "^22.2.0",
+    "@types/selenium-webdriver": "^4.1.25",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.5.4"

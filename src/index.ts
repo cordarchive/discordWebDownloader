@@ -1,5 +1,6 @@
 import path from "path";
-import { URL } from "url";
+import { URL, pathToFileURL } from "url";
+import * as fs from "fs";
 
 import { parseJS } from "@discordWebDownloader/utils/parseJS.js";
 import {
@@ -7,22 +8,12 @@ import {
   fetchAssets,
 } from "@discordWebDownloader/utils/download.js";
 
-const indexHtmlScrapeLinks = [
-  {
-    2015: "https://web.archive.org/web/*/discord.gg/*",
-    2020: "https://web.archive.org/web/*/discord.com/app"
-  },
-  {
-    2015: "https://web.archive.org/web/*/https://ptb.discordapp.com/channels/*",
-    2020: "https://web.archive.org/web/*/https://ptb.discord.com/channels/*"
-  },
-  {
-    2015: "https://web.archive.org/web/*/https://canary.discordapp.com/channels/*",
-    2020: "https://web.archive.org/web/*/https://canary.discord.com/channels/*"
-  }
-]
-
-export async function loopMatchingAssets(assets: any[], depth: number) {
+export async function loopMatchingAssets(
+  assets: any[],
+  depth: number,
+  waybackDate?: string,
+  date?: string
+) {
   if (assets) {
     assets.forEach((element, index, array) => {
       if (element[1]) {
@@ -44,22 +35,30 @@ export async function loopMatchingAssets(assets: any[], depth: number) {
     assets = assets.flat(Infinity);
     for (const asset of assets) {
       console.log(`[index] Downloading: ${asset}`);
-      const url = new URL(asset, "https://canary.discord.com");
+      let url = new URL(asset, "https://discord.com");
+      if ((await fetch(url)).status !== 200) {
+        url = new URL(
+          `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/${asset}`
+        );
+      }
       switch (path.extname(asset)) {
         case ".js": {
-          await parseJS(asset, depth);
+          await parseJS(asset, depth, waybackDate);
           break;
         }
         case ".css": {
           const assets = await detectAssets(
             url,
-            /\/assets\/[0-9a-f]+\.(?:png|woff2|svg)/g
+            asset,
+            /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,
+            date
           );
-          if (assets) await loopMatchingAssets([...assets], depth);
+          if (assets)
+            await loopMatchingAssets([...assets], depth, waybackDate, date);
           break;
         }
         default: {
-          await fetchAssets(asset, url);
+          await fetchAssets(asset, url, date);
           break;
         }
       }
@@ -70,13 +69,62 @@ export async function loopMatchingAssets(assets: any[], depth: number) {
 globalThis.depth2Assets = [];
 globalThis.depth3Assets = [];
 
-const assets = await detectAssets(
-  new URL("https://canary.discord.com/app"),
-  /\/assets\/[0-9a-f\.]+\.(?:js|css|png|ico)/g
-);
+let assets;
 
-if (assets) await loopMatchingAssets([...assets], 1);
-if (globalThis.depth2Assets.length != 0)
-  await loopMatchingAssets(globalThis.depth2Assets, 2);
-if (globalThis.depth3Assets.length != 0)
-  await loopMatchingAssets(globalThis.depth3Assets, 3);
+const rootFolder = path.join(import.meta.dirname, "..");
+const scrapeFile = path.join(rootFolder, "scrape.txt");
+
+async function start(assets: any, waybackDate?: string, date?: string) {
+  if (assets) await loopMatchingAssets([...assets], 1, waybackDate, date);
+  if (globalThis.depth2Assets.length != 0)
+    await loopMatchingAssets(globalThis.depth2Assets, 2, waybackDate, date);
+  if (globalThis.depth3Assets.length != 0)
+    await loopMatchingAssets(globalThis.depth3Assets, 3, waybackDate, date);
+}
+
+if (!process.argv[2] || process.argv[2] === "false") {
+  const captures = JSON.parse(
+    fs.readFileSync(scrapeFile, {
+      encoding: "utf-8",
+    })
+  );
+
+  for (const capture of captures) {
+    globalThis.date = capture.firstCapture;
+    const convertedDate = new Date(Date.parse(capture.firstCapture));
+    const waybackDate = `${convertedDate.getFullYear()}${(
+      convertedDate.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}${(convertedDate.getDate() - 1)
+      .toString()
+      .padStart(2, "0")}`;
+    const link = `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/invite/${
+      capture.url.match(/\w+\:\/\/[\w\.]+\/(\w+)/)[1]
+    }`;
+    const url = new URL(link);
+    assets = await detectAssets(
+      url,
+      url.pathname,
+      /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,
+      capture.firstCapture
+    );
+    await start(assets, waybackDate, capture.firstCapture);
+    fs.writeFileSync(
+      path.join(rootFolder, "out", globalThis.date, "metadata.json"),
+      JSON.stringify({ buildNumber: globalThis.buildNumber })
+    );
+  }
+} else {
+  const url = pathToFileURL(path.join(rootFolder, "input", "index.html"));
+  assets = await detectAssets(
+    url,
+    url.pathname,
+    /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g
+  );
+  await start(assets);
+  fs.writeFileSync(
+    path.join(rootFolder, "out", "metadata.json"),
+    JSON.stringify({ buildNumber: globalThis.buildNumber })
+  );
+}
