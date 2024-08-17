@@ -19,22 +19,27 @@ const getBuildNumber = /(?:appVersion|buildNumber).*"(\d+)"/g;
     Result should return only one file matching with a lot of assets which fill be formated to 7e3.e893f6ba921a0c8b.js for every iteration
 */
 
+const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
 export async function parseJS(
   asset: string,
   depth: number,
   waybackDate?: string
 ) {
   let url: any = new URL(asset, "https://discord.com");
+  await timer(2000)
   if ((await fetch(url)).status !== 200) {
     url = new URL(
       `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`
     );
   }
+  await timer(2000)
   if ((await fetch(url)).status !== 200) {
     url = new URL(
       `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`
     );
   }
+  await timer(2000)
   if ((await fetch(url)).status !== 200) {
     url = null;
   }

@@ -38,16 +38,19 @@ export async function loopMatchingAssets(
     for (const asset of assets) {
       console.log(`[index] Downloading: ${asset}`);
       let url: any = new URL(asset, "https://discord.com");
+      await timer(2000)
       if ((await fetch(url)).status !== 200) {
         url = new URL(
           `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`
         );
       }
+      await timer(2000)
       if ((await fetch(url)).status !== 200) {
         url = new URL(
           `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`
         );
       }
+      await timer(2000)
       if ((await fetch(url)).status !== 200) {
         url = null;
       }
@@ -74,7 +77,7 @@ export async function loopMatchingAssets(
           }
         }
       }
-      timer(10000)
+      await timer(5000)
     }
   }
 }
