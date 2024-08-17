@@ -36,48 +36,47 @@ export async function loopMatchingAssets(
     });
     assets = assets.flat(Infinity);
     for (const asset of assets) {
+      const outputPath = date
+        ? path.join(rootFolder, "out", date, asset)
+        : path.join(rootFolder, "out", asset);
+      if (fs.existsSync(outputPath)) {
+        continue;
+      }
       console.log(`[index] Downloading: ${asset}`);
-      let url: any = new URL(asset, "https://discord.com");
-      await timer(2000)
-      if ((await fetch(url)).status !== 200) {
-        url = new URL(
-          `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`
-        );
-      }
-      await timer(2000)
-      if ((await fetch(url)).status !== 200) {
-        url = new URL(
-          `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`
-        );
-      }
-      await timer(2000)
-      if ((await fetch(url)).status !== 200) {
-        url = null;
-      }
-      if (url) {
-        switch (path.extname(asset)) {
-          case ".js": {
-            await parseJS(asset, depth, waybackDate);
-            break;
+      let urls = [
+        `https://discord.com${asset}`,
+        `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`,
+        `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`,
+      ];
+      switch (path.extname(asset)) {
+        case ".js": {
+          await parseJS(asset, depth, waybackDate);
+          break;
+        }
+        case ".css": {
+          const assets = await detectAssets(
+            urls,
+            asset,
+            /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,
+            date
+          );
+          if (assets)
+            await loopMatchingAssets([...assets], depth, waybackDate, date);
+          break;
+        }
+        default: {
+          let finished;
+          for (const url of urls) {
+            if (!finished) {
+              finished = await fetchAssets(asset, url, date);
+            } else {
+              break;
+            }
           }
-          case ".css": {
-            const assets = await detectAssets(
-              url,
-              asset,
-              /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,
-              date
-            );
-            if (assets)
-              await loopMatchingAssets([...assets], depth, waybackDate, date);
-            break;
-          }
-          default: {
-            await fetchAssets(asset, url, date);
-            break;
-          }
+          break;
         }
       }
-      await timer(5000)
+      await timer(3000);
     }
   }
 }
@@ -121,13 +120,12 @@ if (!process.argv[3] || process.argv[3] === "false") {
       .padStart(2, "0")}${(convertedDate.getDate() - 1)
       .toString()
       .padStart(2, "0")}`;
-    const link = `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/invite/${
+    const url = `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/invite/${
       capture.url.match(/\w+\:\/\/[\w\.]+\/(\w+)/)[1]
     }`;
-    const url = new URL(link);
     assets = await detectAssets(
-      url,
-      url.pathname,
+      [url],
+      new URL(url).pathname,
       /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,
       capture.firstCapture
     );
@@ -143,7 +141,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
 } else {
   const url = pathToFileURL(path.join(rootFolder, "input", "index.html"));
   assets = await detectAssets(
-    url,
+    [url.toString()],
     url.pathname,
     /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g
   );

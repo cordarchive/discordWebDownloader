@@ -7,23 +7,38 @@ import { ReadableStream } from "node:stream/web";
 
 const fetchOptions: RequestInit = {
   cache: "no-cache",
-  referrer: "https://discord.com",
   mode: "cors",
   keepalive: true,
+  referrer: "https://discord.com",
 };
 
 const rootFolder = path.join(import.meta.dirname, "..", "..");
 
-export async function detectAssets(url: URL, assetPathname: string, regex?: RegExp, date?: string) {
+const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+export async function detectAssets(
+  urls: string[],
+  assetPathname: string,
+  regex?: RegExp,
+  date?: string
+) {
   let pathname = "";
 
-  if (path.extname(url.href) === "") {
+  if (path.extname(urls[0]) === "") {
     pathname = "index.html";
   } else {
     pathname = assetPathname;
   }
 
-  const finished = await fetchAssets(pathname, url, date);
+  let finished = false;
+
+  for (const url of urls) {
+    if (!finished) {
+      finished = await fetchAssets(pathname, url, date);
+    } else {
+      break;
+    }
+  }
 
   if (!finished) {
     return;
@@ -43,8 +58,24 @@ export async function detectAssets(url: URL, assetPathname: string, regex?: RegE
   }
 }
 
-export async function fetchAssets(pathname: string, url: URL, date?: string) {
-  const res = await fetch(url, fetchOptions);
+export async function fetchAssets(
+  pathname: string,
+  url: string,
+  date?: string
+) {
+  const res = await (async function fetchRetry(): Promise<any> {
+    async function retry(err: any) {
+      if (err.code !== "ECONNREFUSED") {
+        console.error(err)
+      }
+      await timer(60000);
+      return await fetchRetry();
+    }
+    return fetch(
+      url,
+      url.includes("discord.com") ? fetchOptions : undefined
+    ).catch(retry);
+  })();
 
   if (!res.ok) {
     return false;

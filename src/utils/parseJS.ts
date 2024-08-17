@@ -5,7 +5,6 @@
 */
 
 import { detectAssets } from "@discordWebDownloader/utils/download.js";
-import path from "path";
 
 const getWebpackAssets =
   /(?<![g-zA-Z_])([0-9a-f]+): ?"([0-9a-f]{8,})",?(?![g-zA-Z_])/g;
@@ -26,55 +25,46 @@ export async function parseJS(
   depth: number,
   waybackDate?: string
 ) {
-  let url: any = new URL(asset, "https://discord.com");
-  await timer(2000)
-  if ((await fetch(url)).status !== 200) {
-    url = new URL(
-      `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`
-    );
-  }
-  await timer(2000)
-  if ((await fetch(url)).status !== 200) {
-    url = new URL(
-      `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`
-    );
-  }
-  await timer(2000)
-  if ((await fetch(url)).status !== 200) {
-    url = null;
+  let urls = [
+    `https://discord.com${asset}`,
+    `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`,
+    `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`,
+  ];
+
+  const buildNumberCheckResult = await detectAssets(
+    urls,
+    asset,
+    getBuildNumber,
+    date
+  );
+
+  if (buildNumberCheckResult) {
+    globalThis.buildNumber = Array.from(buildNumberCheckResult)[1];
   }
 
-  if (url) {
-    const buildNumberCheckResult = await detectAssets(
-      url,
-      asset,
-      getBuildNumber,
-      date
-    );
+  let assets;
 
-    if (buildNumberCheckResult) {
-      globalThis.buildNumber = Array.from(buildNumberCheckResult)[1];
+  switch (depth) {
+    case 1: {
+      assets = await detectAssets(urls, asset, getWebpackAssets, date);
+      if (assets && Array.from(assets).length === 0) {
+        assets = await detectAssets(urls, asset, getMediaAssets, date);
+        globalThis.depth3Assets = assets
+          ? [...globalThis.depth3Assets, ...assets]
+          : globalThis.depth3Assets;
+      } else {
+        globalThis.depth2Assets = assets
+          ? [...globalThis.depth2Assets, ...assets]
+          : globalThis.depth2Assets;
+      }
+      break;
     }
-
-    let assets;
-
-    switch (depth) {
-      case 1: {
-        assets =
-          (await detectAssets(url, asset, getWebpackAssets, date)) ??
-          (await detectAssets(url, asset, getMediaAssets, date));
-        if (assets) {
-          globalThis.depth2Assets = [...globalThis.depth2Assets, ...assets];
-        }
-        break;
-      }
-      case 2: {
-        assets = await detectAssets(url, asset, getMediaAssets, date);
-        if (assets) {
-          globalThis.depth3Assets = [...globalThis.depth3Assets, ...assets];
-        }
-        break;
-      }
+    case 2: {
+      assets = await detectAssets(urls, asset, getMediaAssets, date);
+      globalThis.depth3Assets = assets
+        ? [...globalThis.depth3Assets, ...assets]
+        : globalThis.depth3Assets;
+      break;
     }
   }
 }
