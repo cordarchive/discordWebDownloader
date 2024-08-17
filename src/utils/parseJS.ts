@@ -6,6 +6,7 @@
 
 import { detectAssets } from "@discordWebDownloader/utils/download.js";
 import { flattenRegexArray } from "@discordWebDownloader/utils/flattenRegexArray.js";
+import { determineDownloadUrlOrder } from "@discordWebDownloader/utils/determineDownloadUrlOrder.js";
 
 const getWebpackAssets =
   /(?<![g-zA-Z_])([0-9a-f]+): ?"([0-9a-f]{8,})",?(?![g-zA-Z_])/g;
@@ -20,11 +21,7 @@ const getBuildNumber = /(?:appVersion|buildNumber).*"(\d+)"/g;
 */
 
 export async function parseJS(asset: string, waybackDate?: string) {
-  let urls = [
-    `https://discord.com${asset}`,
-    `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`,
-    `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`,
-  ];
+  const urls = determineDownloadUrlOrder(asset, waybackDate, date);
 
   const buildNumberCheckResult = await detectAssets(
     urls,

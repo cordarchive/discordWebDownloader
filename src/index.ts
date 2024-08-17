@@ -8,6 +8,7 @@ import {
   fetchAssets,
 } from "@discordWebDownloader/utils/download.js";
 import { flattenRegexArray } from "@discordWebDownloader/utils/flattenRegexArray.js";
+import { determineDownloadUrlOrder } from "@discordWebDownloader/utils/determineDownloadUrlOrder.js";
 
 const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -25,11 +26,7 @@ async function loopMatchingAssets(
         continue;
       }
       console.log(`[index] Downloading: ${asset}`);
-      let urls = [
-        `https://discord.com${asset}`,
-        `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`,
-        `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`,
-      ];
+      const urls = determineDownloadUrlOrder(asset, waybackDate, date);
       switch (path.extname(asset)) {
         case ".js": {
           await parseJS(asset, waybackDate);
