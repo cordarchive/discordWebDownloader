@@ -35,7 +35,7 @@ export async function loopMatchingAssets(
     assets = assets.flat(Infinity);
     for (const asset of assets) {
       console.log(`[index] Downloading: ${asset}`);
-      let url = new URL(asset, "https://discord.com");
+      let url: any = new URL(asset, "https://discord.com");
       if ((await fetch(url)).status !== 200) {
         url = new URL(
           `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/${asset}`
@@ -46,25 +46,30 @@ export async function loopMatchingAssets(
           `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net/${asset}`
         );
       }
-      switch (path.extname(asset)) {
-        case ".js": {
-          await parseJS(asset, depth, waybackDate);
-          break;
-        }
-        case ".css": {
-          const assets = await detectAssets(
-            url,
-            asset,
-            /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,
-            date
-          );
-          if (assets)
-            await loopMatchingAssets([...assets], depth, waybackDate, date);
-          break;
-        }
-        default: {
-          await fetchAssets(asset, url, date);
-          break;
+      if ((await fetch(url)).status !== 200) {
+        url = null;
+      }
+      if (url) {
+        switch (path.extname(asset)) {
+          case ".js": {
+            await parseJS(asset, depth, waybackDate);
+            break;
+          }
+          case ".css": {
+            const assets = await detectAssets(
+              url,
+              asset,
+              /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,
+              date
+            );
+            if (assets)
+              await loopMatchingAssets([...assets], depth, waybackDate, date);
+            break;
+          }
+          default: {
+            await fetchAssets(asset, url, date);
+            break;
+          }
         }
       }
     }

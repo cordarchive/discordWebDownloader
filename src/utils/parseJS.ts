@@ -24,7 +24,7 @@ export async function parseJS(
   depth: number,
   waybackDate?: string
 ) {
-  let url = new URL(asset, "https://discord.com");
+  let url: any = new URL(asset, "https://discord.com");
   if ((await fetch(url)).status !== 200) {
     url = new URL(
       `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/${asset}`
@@ -35,36 +35,41 @@ export async function parseJS(
       `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net/${asset}`
     );
   }
-
-  const buildNumberCheckResult = await detectAssets(
-    url,
-    asset,
-    getBuildNumber,
-    date
-  );
-
-  if (buildNumberCheckResult) {
-    globalThis.buildNumber = Array.from(buildNumberCheckResult)[1];
+  if ((await fetch(url)).status !== 200) {
+    url = null;
   }
 
-  let assets;
+  if (url) {
+    const buildNumberCheckResult = await detectAssets(
+      url,
+      asset,
+      getBuildNumber,
+      date
+    );
 
-  switch (depth) {
-    case 1: {
-      assets =
-        (await detectAssets(url, asset, getWebpackAssets, date)) ??
-        (await detectAssets(url, asset, getMediaAssets, date));
-      if (assets) {
-        globalThis.depth2Assets = [...globalThis.depth2Assets, ...assets];
-      }
-      break;
+    if (buildNumberCheckResult) {
+      globalThis.buildNumber = Array.from(buildNumberCheckResult)[1];
     }
-    case 2: {
-      assets = await detectAssets(url, asset, getMediaAssets, date);
-      if (assets) {
-        globalThis.depth3Assets = [...globalThis.depth3Assets, ...assets];
+
+    let assets;
+
+    switch (depth) {
+      case 1: {
+        assets =
+          (await detectAssets(url, asset, getWebpackAssets, date)) ??
+          (await detectAssets(url, asset, getMediaAssets, date));
+        if (assets) {
+          globalThis.depth2Assets = [...globalThis.depth2Assets, ...assets];
+        }
+        break;
       }
-      break;
+      case 2: {
+        assets = await detectAssets(url, asset, getMediaAssets, date);
+        if (assets) {
+          globalThis.depth3Assets = [...globalThis.depth3Assets, ...assets];
+        }
+        break;
+      }
     }
   }
 }
