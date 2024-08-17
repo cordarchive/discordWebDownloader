@@ -27,12 +27,12 @@ export async function parseJS(
   let url: any = new URL(asset, "https://discord.com");
   if ((await fetch(url)).status !== 200) {
     url = new URL(
-      `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/${asset}`
+      `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`
     );
   }
   if ((await fetch(url)).status !== 200) {
     url = new URL(
-      `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net/${asset}`
+      `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net${asset}`
     );
   }
   if ((await fetch(url)).status !== 200) {
