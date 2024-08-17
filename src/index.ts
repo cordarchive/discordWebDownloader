@@ -7,34 +7,16 @@ import {
   detectAssets,
   fetchAssets,
 } from "@discordWebDownloader/utils/download.js";
+import { flattenRegexArray } from "@discordWebDownloader/utils/flattenRegexArray.js";
 
 const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-export async function loopMatchingAssets(
+async function loopMatchingAssets(
   assets: any[],
-  depth: number,
   waybackDate?: string,
   date?: string
 ) {
   if (assets) {
-    assets.forEach((element, index, array) => {
-      if (element[1]) {
-        switch (depth) {
-          case 2: {
-            array[index] = [
-              `/assets/${element[1]}.${element[2]}.js`,
-              `/assets/${element[2]}.js`,
-            ];
-            break;
-          }
-          case 3: {
-            array[index] = `/assets/${element[1]}`;
-            break;
-          }
-        }
-      }
-    });
-    assets = assets.flat(Infinity);
     for (const asset of assets) {
       const outputPath = date
         ? path.join(rootFolder, "out", date, asset)
@@ -50,7 +32,7 @@ export async function loopMatchingAssets(
       ];
       switch (path.extname(asset)) {
         case ".js": {
-          await parseJS(asset, depth, waybackDate);
+          await parseJS(asset, waybackDate);
           break;
         }
         case ".css": {
@@ -61,7 +43,11 @@ export async function loopMatchingAssets(
             date
           );
           if (assets)
-            await loopMatchingAssets([...assets], depth, waybackDate, date);
+            await loopMatchingAssets(
+              flattenRegexArray(Array.from(assets)),
+              waybackDate,
+              date
+            );
           break;
         }
         default: {
@@ -69,20 +55,17 @@ export async function loopMatchingAssets(
           for (const url of urls) {
             if (!finished) {
               finished = await fetchAssets(asset, url, date);
-            } else {
-              break;
             }
           }
           break;
         }
       }
-      await timer(3000);
+      await timer(1000);
     }
   }
 }
 
-globalThis.depth2Assets = [];
-globalThis.depth3Assets = [];
+globalThis.assets = [];
 
 let assets;
 
@@ -90,11 +73,11 @@ const rootFolder = path.join(import.meta.dirname, "..");
 const scrapeFile = path.join(rootFolder, "scrape.txt");
 
 async function start(assets: any, waybackDate?: string, date?: string) {
-  if (assets) await loopMatchingAssets([...assets], 1, waybackDate, date);
-  if (globalThis.depth2Assets.length != 0)
-    await loopMatchingAssets(globalThis.depth2Assets, 2, waybackDate, date);
-  if (globalThis.depth3Assets.length != 0)
-    await loopMatchingAssets(globalThis.depth3Assets, 3, waybackDate, date);
+  if (assets)
+    await loopMatchingAssets(flattenRegexArray(Array.from(assets)), waybackDate, date);
+  for (let i = 0; i <= globalThis.assets.length; i++) {
+    await loopMatchingAssets(globalThis.assets[i], waybackDate, date);
+  }
 }
 
 if (!process.argv[2]) {
@@ -110,8 +93,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
 
   for (const capture of captures) {
     globalThis.date = capture.firstCapture;
-    globalThis.depth2Assets = [];
-    globalThis.depth3Assets = [];
+    globalThis.assets = [];
     const convertedDate = new Date(Date.parse(capture.firstCapture));
     const waybackDate = `${convertedDate.getFullYear()}${(
       convertedDate.getMonth() + 1

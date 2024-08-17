@@ -5,6 +5,7 @@
 */
 
 import { detectAssets } from "@discordWebDownloader/utils/download.js";
+import { flattenRegexArray } from "@discordWebDownloader/utils/flattenRegexArray.js";
 
 const getWebpackAssets =
   /(?<![g-zA-Z_])([0-9a-f]+): ?"([0-9a-f]{8,})",?(?![g-zA-Z_])/g;
@@ -18,13 +19,7 @@ const getBuildNumber = /(?:appVersion|buildNumber).*"(\d+)"/g;
     Result should return only one file matching with a lot of assets which fill be formated to 7e3.e893f6ba921a0c8b.js for every iteration
 */
 
-const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
-export async function parseJS(
-  asset: string,
-  depth: number,
-  waybackDate?: string
-) {
+export async function parseJS(asset: string, waybackDate?: string) {
   let urls = [
     `https://discord.com${asset}`,
     `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com${asset}`,
@@ -44,27 +39,12 @@ export async function parseJS(
 
   let assets;
 
-  switch (depth) {
-    case 1: {
-      assets = await detectAssets(urls, asset, getWebpackAssets, date);
-      if (assets && Array.from(assets).length === 0) {
-        assets = await detectAssets(urls, asset, getMediaAssets, date);
-        globalThis.depth3Assets = assets
-          ? [...globalThis.depth3Assets, ...assets]
-          : globalThis.depth3Assets;
-      } else {
-        globalThis.depth2Assets = assets
-          ? [...globalThis.depth2Assets, ...assets]
-          : globalThis.depth2Assets;
-      }
-      break;
-    }
-    case 2: {
-      assets = await detectAssets(urls, asset, getMediaAssets, date);
-      globalThis.depth3Assets = assets
-        ? [...globalThis.depth3Assets, ...assets]
-        : globalThis.depth3Assets;
-      break;
-    }
+  assets = await detectAssets(urls, asset, getWebpackAssets, date);
+  if (assets && Array.from(assets).length === 0) {
+    assets = await detectAssets(urls, asset, getMediaAssets, date);
+  }
+  if (assets) {
+    assets = flattenRegexArray(Array.from(assets));
+    globalThis.assets.push(assets);
   }
 }

@@ -67,8 +67,10 @@ export async function fetchAssets(
     async function retry(err: any) {
       if (err.code !== "ECONNREFUSED") {
         console.error(err)
+      } else {
+        console.log("Wayback Machine connection got refused...")
       }
-      await timer(60000);
+      await timer(5000);
       return await fetchRetry();
     }
     return fetch(
