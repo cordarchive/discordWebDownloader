@@ -41,6 +41,11 @@ export async function loopMatchingAssets(
           `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/${asset}`
         );
       }
+      if ((await fetch(url)).status !== 200) {
+        url = new URL(
+          `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net/${asset}`
+        );
+      }
       switch (path.extname(asset)) {
         case ".js": {
           await parseJS(asset, depth, waybackDate);
@@ -82,7 +87,11 @@ async function start(assets: any, waybackDate?: string, date?: string) {
     await loopMatchingAssets(globalThis.depth3Assets, 3, waybackDate, date);
 }
 
-if (!process.argv[2] || process.argv[2] === "false") {
+if (!process.argv[2]) {
+  console.error("Error: please mention release channel");
+}
+
+if (!process.argv[3] || process.argv[3] === "false") {
   const captures = JSON.parse(
     fs.readFileSync(scrapeFile, {
       encoding: "utf-8",
@@ -114,7 +123,10 @@ if (!process.argv[2] || process.argv[2] === "false") {
     await start(assets, waybackDate, capture.firstCapture);
     fs.writeFileSync(
       path.join(rootFolder, "out", globalThis.date, "metadata.json"),
-      JSON.stringify({ buildNumber: globalThis.buildNumber })
+      JSON.stringify({
+        build_number: globalThis.buildNumber ?? null,
+        release_channel: "stable",
+      })
     );
   }
 } else {
@@ -127,6 +139,9 @@ if (!process.argv[2] || process.argv[2] === "false") {
   await start(assets);
   fs.writeFileSync(
     path.join(rootFolder, "out", "metadata.json"),
-    JSON.stringify({ buildNumber: globalThis.buildNumber })
+    JSON.stringify({
+      build_number: globalThis.buildNumber ?? null,
+      release_channel: "stable",
+    })
   );
 }

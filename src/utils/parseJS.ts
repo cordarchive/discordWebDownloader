@@ -30,6 +30,11 @@ export async function parseJS(
       `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/${asset}`
     );
   }
+  if ((await fetch(url)).status !== 200) {
+    url = new URL(
+      `https://web.archive.org/web/${waybackDate}000000im_/https://d3dsisomax34re.cloudfront.net/${asset}`
+    );
+  }
 
   const buildNumberCheckResult = await detectAssets(
     url,
