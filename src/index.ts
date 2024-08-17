@@ -95,6 +95,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
     globalThis.date = capture.firstCapture;
     globalThis.assets = [];
     const convertedDate = new Date(Date.parse(capture.firstCapture));
+    console.log(capture.url.match(/\w+\:\/\/[\w\.]+\/(\w+)/))
     const waybackDate = `${convertedDate.getFullYear()}${(
       convertedDate.getMonth() + 1
     )
@@ -103,7 +104,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
       .toString()
       .padStart(2, "0")}`;
     const url = `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/invite/${
-      capture.url.match(/\w+\:\/\/[\w\.]+\/(\w+)/)[1]
+      capture.url.match(/\w+\:\/\/[\w\.\:]+\/(\w+)/)[1]
     }`;
     assets = await detectAssets(
       [url],
