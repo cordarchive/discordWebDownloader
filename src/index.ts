@@ -95,7 +95,6 @@ if (!process.argv[3] || process.argv[3] === "false") {
     globalThis.date = capture.firstCapture;
     globalThis.assets = [];
     const convertedDate = new Date(Date.parse(capture.firstCapture));
-    console.log(capture.url.match(/\w+\:\/\/[\w\.]+\/(\w+)/))
     const waybackDate = `${convertedDate.getFullYear()}${(
       convertedDate.getMonth() + 1
     )
