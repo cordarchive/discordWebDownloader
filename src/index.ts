@@ -71,7 +71,11 @@ const scrapeFile = path.join(rootFolder, "scrape.txt");
 
 async function start(assets: any, waybackDate?: string, date?: string) {
   if (assets)
-    await loopMatchingAssets(flattenRegexArray(Array.from(assets)), waybackDate, date);
+    await loopMatchingAssets(
+      flattenRegexArray(Array.from(assets)),
+      waybackDate,
+      date
+    );
   for (let i = 0; i <= globalThis.assets.length; i++) {
     await loopMatchingAssets(globalThis.assets[i], waybackDate, date);
   }
@@ -99,9 +103,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
       .padStart(2, "0")}${(convertedDate.getDate() - 1)
       .toString()
       .padStart(2, "0")}`;
-    const url = `https://web.archive.org/web/${waybackDate}000000im_/https://discordapp.com/invite/${
-      capture.url.match(/\w+\:\/\/[\w\.\:]+\/(\w+)/)[1]
-    }`;
+    const url = `https://web.archive.org/web/${waybackDate}000000im_/${capture.url}`;
     assets = await detectAssets(
       [url],
       new URL(url).pathname,
