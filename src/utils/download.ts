@@ -61,7 +61,7 @@ export async function detectAssets(
     return;
   }
 
-  if (pathname === "index.html" && globalThis.lastIndex) {
+  if (pathname === "index.html") {
     globalThis.lastIndex = body;
   }
 
