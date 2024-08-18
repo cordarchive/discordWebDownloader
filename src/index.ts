@@ -119,20 +119,21 @@ if (!process.argv[3] || process.argv[3] === "false") {
       capture.firstCapture
     );
     await start(assets, waybackDate, capture.firstCapture);
+    if (!fs.existsSync(buildFolder)) {
+      continue;
+    }
     if (fs.readdirSync(path.join(buildFolder, "assets")).length === 0) {
       fs.rm(buildFolder, { recursive: true, force: true }, () => {});
       continue;
     }
     fs.appendFileSync(buildLogFile, `\n${capture.firstCapture}`);
-    if (!fs.existsSync(metadataFile)) {
-      fs.writeFileSync(
-        metadataFile,
-        JSON.stringify({
-          build_number: globalThis.buildNumber ?? null,
-          release_channel: "stable",
-        })
-      );
-    }
+    fs.writeFileSync(
+      metadataFile,
+      JSON.stringify({
+        build_number: globalThis.buildNumber ?? null,
+        release_channel: "stable",
+      })
+    );
   }
 } else {
   metadataFile = path.join(rootFolder, "out", "metadata.json");
@@ -143,13 +144,11 @@ if (!process.argv[3] || process.argv[3] === "false") {
     /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g
   );
   await start(assets);
-  if (!fs.existsSync(metadataFile)) {
-    fs.writeFileSync(
-      metadataFile,
-      JSON.stringify({
-        build_number: globalThis.buildNumber ?? null,
-        release_channel: "stable",
-      })
-    );
-  }
+  fs.writeFileSync(
+    metadataFile,
+    JSON.stringify({
+      build_number: globalThis.buildNumber ?? null,
+      release_channel: "stable",
+    })
+  );
 }
