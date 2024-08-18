@@ -53,6 +53,14 @@ export async function detectAssets(
     flag: "rs+",
   });
 
+  if (globalThis.lastIndex && globalThis.lastIndex === body) {
+    return;
+  }
+
+  if (globalThis.lastIndex) {
+    globalThis.lastIndex = body;
+  }
+
   if (regex) {
     return body.matchAll(regex);
   }
@@ -66,9 +74,9 @@ export async function fetchAssets(
   const res = await (async function fetchRetry(): Promise<any> {
     async function retry(err: any) {
       if (err.code !== "ECONNREFUSED") {
-        console.error(err)
+        console.error(err);
       } else {
-        console.log("Wayback Machine connection got refused...")
+        console.log("Wayback Machine connection got refused...");
       }
       await timer(5000);
       return await fetchRetry();

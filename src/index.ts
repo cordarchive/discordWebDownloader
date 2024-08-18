@@ -104,7 +104,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
       .toString()
       .padStart(2, "0")}`;
     const url = `https://web.archive.org/web/${waybackDate}000000im_/${capture.url}`;
-    const assets = await detectAssets(
+    assets = await detectAssets(
       [url],
       new URL(url).pathname,
       /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,

@@ -18,13 +18,15 @@ const indexHtmlScrapeLinks = [
 ];
 
 const rootFolder = path.join(import.meta.dirname, "..");
-const scrapeFile = path.join(rootFolder, "scrape.txt")
+const scrapeFile = path.join(rootFolder, "scrape.txt");
 
 if (!fs.existsSync(scrapeFile)) {
-  fs.closeSync(fs.openSync(scrapeFile, "w"));
+  fs.writeFileSync(scrapeFile, JSON.stringify([]));
 }
 
-let finalUrls: any[] = [];
+let finalUrls: any[] = JSON.parse(
+  fs.readFileSync(scrapeFile, { encoding: "utf-8" })
+);
 
 const browser = await puppeteer.launch({
   headless: false,
@@ -63,19 +65,25 @@ let done2015 = false;
 const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 for (let dataDtIdx = 0; !done2015; dataDtIdx++) {
-  const urlList = await page.$$("#resultsUrl tbody tr")
+  const urlList = await page.$$("#resultsUrl tbody tr");
 
   let urls = [];
 
   for (const row of urlList) {
-    const url = await page.evaluate(element => element.querySelector(".url")?.textContent, row);
-    const firstCapture = await page.evaluate(element => element.querySelector(".dateFrom")?.textContent, row);
+    const url = await page.evaluate(
+      (element) => element.querySelector(".url")?.textContent,
+      row
+    );
+    const firstCapture = await page.evaluate(
+      (element) => element.querySelector(".dateFrom")?.textContent,
+      row
+    );
     if (firstCapture && Date.parse(firstCapture) >= 1588608000000) {
       done2015 = true;
     }
     if (
-      url?.match(/https*:\/\/[www.]*discord.gg[:80]*\/\w+/) &&
-      !url?.match(/\/\w+\/[\.\w]*|\?/) &&
+      url?.match(/https*:\/\/(?:[www.]|[ptb.]|[canary.])*discord[app]*.com[:80]*\/invite\/\w+/) &&
+      !url?.match(/\/invite\/(?:\w+\/[\w\.]+|\w+\?\w+|[\w-]+\.\w+)/) &&
       firstCapture &&
       !(Date.parse(firstCapture) >= 1588608000000)
     ) {
@@ -84,13 +92,15 @@ for (let dataDtIdx = 0; !done2015; dataDtIdx++) {
   }
 
   // for removing first capture duplicates
-  const mappedUrls = new Map(urls.map((url) => [url?.firstCapture, url]));
+  const mappedUrls = new Map(urls.map((url: any) => [url?.firstCapture, url]));
 
-  finalUrls = [...finalUrls, ...mappedUrls.values()];
+  fs.writeFileSync(
+    scrapeFile,
+    JSON.stringify([...finalUrls, ...mappedUrls.values()]), {encoding: "utf-8"}
+  );
+  finalUrls = JSON.parse(fs.readFileSync(scrapeFile, { encoding: "utf-8" }));
   await timer(10000);
   await page.locator(`.paginate_button [data-dt-idx="${dataDtIdx}"]`).click();
 }
 
-fs.writeFileSync(scrapeFile, JSON.stringify(finalUrls));
-
-browser.close()
+browser.close();
