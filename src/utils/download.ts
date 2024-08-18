@@ -53,11 +53,15 @@ export async function detectAssets(
     flag: "rs+",
   });
 
-  if (globalThis.lastIndex && globalThis.lastIndex === body) {
+  if (
+    pathname === "index.html" &&
+    globalThis.lastIndex &&
+    globalThis.lastIndex === body
+  ) {
     return;
   }
 
-  if (globalThis.lastIndex) {
+  if (pathname === "index.html" && globalThis.lastIndex) {
     globalThis.lastIndex = body;
   }
 
