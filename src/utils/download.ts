@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import readLastLines from "read-last-lines";
 
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
@@ -13,6 +14,7 @@ const fetchOptions: RequestInit = {
 };
 
 const rootFolder = path.join(import.meta.dirname, "..", "..");
+const buildLogFile = path.join(rootFolder, "build.log");
 
 const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -53,16 +55,17 @@ export async function detectAssets(
     flag: "rs+",
   });
 
+  const lastIndexFolder = await readLastLines.read(buildLogFile, 1, "utf-8");
+
+  const lastIndex = fs.readFileSync(path.join(rootFolder, "out", lastIndexFolder, "index.html"), {
+    encoding: "utf-8",
+  })
+
   if (
     pathname === "index.html" &&
-    globalThis.lastIndex &&
-    globalThis.lastIndex === body
+    lastIndex === body
   ) {
     return;
-  }
-
-  if (pathname === "index.html") {
-    globalThis.lastIndex = body;
   }
 
   if (regex) {

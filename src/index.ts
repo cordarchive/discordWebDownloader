@@ -68,6 +68,12 @@ let assets;
 
 const rootFolder = path.join(import.meta.dirname, "..");
 const scrapeFile = path.join(rootFolder, "scrape.txt");
+const buildLogFile = path.join(rootFolder, "build.log");
+let metadataFile;
+
+if (!fs.existsSync(buildLogFile)) {
+  fs.closeSync(fs.openSync(buildLogFile, "w"));
+}
 
 async function start(assets: any, waybackDate?: string, date?: string) {
   if (assets)
@@ -95,6 +101,8 @@ if (!process.argv[3] || process.argv[3] === "false") {
   for (const capture of captures) {
     globalThis.date = capture.firstCapture;
     globalThis.assetsToDownload = [];
+    const buildFolder = path.join(rootFolder, "out", globalThis.date);
+    metadataFile = path.join(buildFolder, "metadata.json");
     const convertedDate = new Date(Date.parse(capture.firstCapture));
     const waybackDate = `${convertedDate.getFullYear()}${(
       convertedDate.getMonth() + 1
@@ -111,15 +119,23 @@ if (!process.argv[3] || process.argv[3] === "false") {
       capture.firstCapture
     );
     await start(assets, waybackDate, capture.firstCapture);
-    fs.writeFileSync(
-      path.join(rootFolder, "out", globalThis.date, "metadata.json"),
-      JSON.stringify({
-        build_number: globalThis.buildNumber ?? null,
-        release_channel: "stable",
-      })
-    );
+    if (fs.readdirSync(path.join(buildFolder, "assets")).length === 0) {
+      fs.rm(buildFolder, { recursive: true, force: true }, () => {});
+      continue;
+    }
+    fs.appendFileSync(buildLogFile, `\n${capture.firstCapture}`);
+    if (!fs.existsSync(metadataFile)) {
+      fs.writeFileSync(
+        metadataFile,
+        JSON.stringify({
+          build_number: globalThis.buildNumber ?? null,
+          release_channel: "stable",
+        })
+      );
+    }
   }
 } else {
+  metadataFile = path.join(rootFolder, "out", "metadata.json");
   const url = pathToFileURL(path.join(rootFolder, "input", "index.html"));
   assets = await detectAssets(
     [url.toString()],
@@ -127,11 +143,13 @@ if (!process.argv[3] || process.argv[3] === "false") {
     /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g
   );
   await start(assets);
-  fs.writeFileSync(
-    path.join(rootFolder, "out", "metadata.json"),
-    JSON.stringify({
-      build_number: globalThis.buildNumber ?? null,
-      release_channel: "stable",
-    })
-  );
+  if (!fs.existsSync(metadataFile)) {
+    fs.writeFileSync(
+      metadataFile,
+      JSON.stringify({
+        build_number: globalThis.buildNumber ?? null,
+        release_channel: "stable",
+      })
+    );
+  }
 }

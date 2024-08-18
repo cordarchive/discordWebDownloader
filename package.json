@@ -13,7 +13,8 @@
   "license": "GPL",
   "dependencies": {
     "js-beautify": "^1.15.1",
-    "puppeteer": "^23.1.0"
+    "puppeteer": "^23.1.0",
+    "read-last-lines": "^1.8.0"
   },
   "devDependencies": {
     "@types/js-beautify": "^1.14.3",
