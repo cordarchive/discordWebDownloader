@@ -1,7 +1,7 @@
 export {};
 
 declare global {
-  var assets: any[];
+  var assetsToDownload: any[];
   var buildNumber: any;
   var date: any;
 }

@@ -62,7 +62,7 @@ async function loopMatchingAssets(
   }
 }
 
-globalThis.assets = [];
+globalThis.assetsToDownload = [];
 
 let assets;
 
@@ -76,8 +76,8 @@ async function start(assets: any, waybackDate?: string, date?: string) {
       waybackDate,
       date
     );
-  for (let i = 0; i <= globalThis.assets.length; i++) {
-    await loopMatchingAssets(globalThis.assets[i], waybackDate, date);
+  for (let i = 0; i <= globalThis.assetsToDownload.length; i++) {
+    await loopMatchingAssets(globalThis.assetsToDownload[i], waybackDate, date);
   }
 }
 
@@ -94,7 +94,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
 
   for (const capture of captures) {
     globalThis.date = capture.firstCapture;
-    globalThis.assets = [];
+    globalThis.assetsToDownload = [];
     const convertedDate = new Date(Date.parse(capture.firstCapture));
     const waybackDate = `${convertedDate.getFullYear()}${(
       convertedDate.getMonth() + 1
@@ -104,7 +104,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
       .toString()
       .padStart(2, "0")}`;
     const url = `https://web.archive.org/web/${waybackDate}000000im_/${capture.url}`;
-    assets = await detectAssets(
+    const assets = await detectAssets(
       [url],
       new URL(url).pathname,
       /\/assets\/[\w\.]*[0-9a-f]+\.\w+/g,

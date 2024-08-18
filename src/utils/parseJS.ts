@@ -8,7 +8,7 @@ import { detectAssets } from "@discordWebDownloader/utils/download.js";
 import { flattenRegexArray } from "@discordWebDownloader/utils/flattenRegexArray.js";
 import { determineDownloadUrlOrder } from "@discordWebDownloader/utils/determineDownloadUrlOrder.js";
 
-const getWebpackAssets =
+const getChunkAssets =
   /(?<![g-zA-Z_])([0-9a-f]+): ?"([0-9a-f]{8,})",?(?![g-zA-Z_])/g;
 
 const getMediaAssets = /"([0-9a-f]{8,}\.\w+)"/g;
@@ -34,14 +34,12 @@ export async function parseJS(asset: string, waybackDate?: string) {
     globalThis.buildNumber = Array.from(buildNumberCheckResult)[1];
   }
 
-  let assets;
-
-  assets = await detectAssets(urls, asset, getWebpackAssets, date);
-  if (assets && Array.from(assets).length === 0) {
-    assets = await detectAssets(urls, asset, getMediaAssets, date);
+  const chunkAssets = await detectAssets(urls, asset, getChunkAssets, date);
+  const mediaAssets = await detectAssets(urls, asset, getMediaAssets, date);
+  if (chunkAssets) {
+    globalThis.assetsToDownload.push(flattenRegexArray(Array.from(chunkAssets)));
   }
-  if (assets) {
-    assets = flattenRegexArray(Array.from(assets));
-    globalThis.assets.push(assets);
+  if (mediaAssets) {
+    globalThis.assetsToDownload.push(flattenRegexArray(Array.from(mediaAssets)));
   }
 }

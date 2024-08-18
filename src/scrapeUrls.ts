@@ -4,7 +4,7 @@ import * as fs from "fs";
 
 const indexHtmlScrapeLinks = [
   {
-    2015: "https://web.archive.org/web/*/discord.gg/*",
+    2015: "https://web.archive.org/web/*/http://discordapp.com/invite/*",
     2020: "https://web.archive.org/web/*/discord.com/app",
   },
   {
