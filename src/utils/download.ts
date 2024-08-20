@@ -57,14 +57,14 @@ export async function detectAssets(
 
   const lastIndexFolder = await readLastLines.read(buildLogFile, 1, "utf-8");
 
-  const lastIndex = fs.readFileSync(path.join(rootFolder, "out", lastIndexFolder, "index.html"), {
-    encoding: "utf-8",
-  })
+  const lastIndex = fs.readFileSync(
+    path.join(rootFolder, "out", lastIndexFolder, "index.html"),
+    {
+      encoding: "utf-8",
+    }
+  );
 
-  if (
-    pathname === "index.html" &&
-    lastIndex === body
-  ) {
+  if (pathname === "index.html" && lastIndex === body) {
     return;
   }
 
@@ -79,12 +79,7 @@ export async function fetchAssets(
   date?: string
 ) {
   const res = await (async function fetchRetry(): Promise<any> {
-    async function retry(err: any) {
-      if (err.code !== "ECONNREFUSED") {
-        console.error(err);
-      } else {
-        console.log("Wayback Machine connection got refused...");
-      }
+    async function retry() {
       await timer(5000);
       return await fetchRetry();
     }
@@ -95,6 +90,9 @@ export async function fetchAssets(
   })();
 
   if (!res.ok) {
+    if (res.status >= 400 && res.status !== 404) {
+      throw Error(`[index] Error while fetching: ${res.status}`);
+    }
     return false;
   }
 
