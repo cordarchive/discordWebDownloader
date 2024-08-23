@@ -13,7 +13,9 @@ const getChunkAssets =
 
 const getMediaAssets = /"([0-9a-f]{8,}\.\w+)"/g;
 
-const getBuildNumber = /(?:appVersion|buildNumber).*"(\d+)"/g;
+const getBuildNumber = /(?:appVersion|buildNumber|build_number|release)(?:: |=)"(\d+)"/g;
+
+const getChannel = /(?:environment|releaseStage|releaseChannel)(?:: |=)"(\w+)"/g;
 
 /*  TODO: Allowing people to control how precise the search the latter part will be. Default will be 2^3
     This regex should match 7e3:"e893f6ba921a0c8b" and 7e3: "e893f6ba921a0c8b" but not id:"2391042821491529"
@@ -30,8 +32,25 @@ export async function parseJS(asset: string, waybackDate?: string) {
     date
   );
 
+  const channelCheckResult = await detectAssets(
+    urls,
+    asset,
+    getChannel,
+    date
+  );
+
   if (buildNumberCheckResult) {
-    globalThis.buildNumber = Array.from(buildNumberCheckResult)[1];
+    const result = Array.from(buildNumberCheckResult);
+    if (result.length !== 0) {
+      globalThis.buildNumber = result[0][1];
+    }
+  }
+
+  if (channelCheckResult) {
+    const result = Array.from(channelCheckResult);
+    if (result.length !== 0) {
+      globalThis.channel = result[0][1];
+    }
   }
 
   const chunkAssets = await detectAssets(urls, asset, getChunkAssets, date);

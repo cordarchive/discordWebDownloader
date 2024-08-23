@@ -63,6 +63,9 @@ async function loopMatchingAssets(
 }
 
 globalThis.assetsToDownload = [];
+globalThis.buildNumber = "";
+globalThis.channel = "";
+globalThis.date = "";
 
 let assets;
 
@@ -131,7 +134,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
       metadataFile,
       JSON.stringify({
         build_number: globalThis.buildNumber ?? null,
-        release_channel: "stable",
+        release_channel: globalThis.channel ?? process.argv[2],
       })
     );
   }
