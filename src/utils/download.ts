@@ -5,6 +5,8 @@ import readLastLines from "read-last-lines";
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
 import { ReadableStream } from "node:stream/web";
+import { convertDateToWaybackDate } from "./convertDateToWaybackDate.js";
+import { determineDownloadUrlOrder } from "./determineDownloadUrlOrder.js";
 
 const fetchOptions: RequestInit = {
   cache: "no-cache",
@@ -90,12 +92,14 @@ export async function fetchAssets(
   date?: string
 ) {
   let res = await fetchRetry(url);
+  let daysBefore = 0;
 
   while (res.status === 429) {
     await timer(5000);
-    res = await fetchRetry(url);
-    if (res.status !== 429) {
-      break;
+    daysBefore = daysBefore + 7;
+    const newUrls = determineDownloadUrlOrder(pathname, convertDateToWaybackDate(date, daysBefore), date)
+    for (const url of newUrls) {
+      res = await fetchRetry(url);
     }
   }
 

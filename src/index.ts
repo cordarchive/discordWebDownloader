@@ -9,6 +9,7 @@ import {
 } from "@discordWebDownloader/utils/download.js";
 import { flattenRegexArray } from "@discordWebDownloader/utils/flattenRegexArray.js";
 import { determineDownloadUrlOrder } from "@discordWebDownloader/utils/determineDownloadUrlOrder.js";
+import { convertDateToWaybackDate } from "./utils/convertDateToWaybackDate.js";
 
 const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -106,14 +107,7 @@ if (!process.argv[3] || process.argv[3] === "false") {
     globalThis.assetsToDownload = [];
     const buildFolder = path.join(rootFolder, "out", globalThis.date);
     metadataFile = path.join(buildFolder, "metadata.json");
-    const convertedDate = new Date(Date.parse(capture.firstCapture));
-    const waybackDate = `${convertedDate.getFullYear()}${(
-      convertedDate.getMonth() + 1
-    )
-      .toString()
-      .padStart(2, "0")}${(convertedDate.getDate() - 1)
-      .toString()
-      .padStart(2, "0")}`;
+    const waybackDate = convertDateToWaybackDate(capture.firstCapture)
     const url = `https://web.archive.org/web/${waybackDate}000000im_/${capture.url}`;
     assets = await detectAssets(
       [url],
