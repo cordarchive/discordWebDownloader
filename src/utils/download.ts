@@ -73,24 +73,34 @@ export async function detectAssets(
   }
 }
 
+async function fetchRetry(url: any): Promise<any> {
+  async function retry() {
+    await timer(5000);
+    return await fetchRetry(url);
+  }
+  return fetch(
+    url,
+    url.includes("discord.com") ? fetchOptions : undefined
+  ).catch(retry);
+}
+
 export async function fetchAssets(
   pathname: string,
   url: string,
   date?: string
 ) {
-  const res = await (async function fetchRetry(): Promise<any> {
-    async function retry() {
-      await timer(5000);
-      return await fetchRetry();
+  let res = await fetchRetry(url);
+
+  while (res.status === 429) {
+    await timer(5000);
+    res = await fetchRetry(url);
+    if (res.status !== 429) {
+      break;
     }
-    return fetch(
-      url,
-      url.includes("discord.com") ? fetchOptions : undefined
-    ).catch(retry);
-  })();
+  }
 
   if (!res.ok) {
-    if (res.status >= 400 && res.status !== 404) {
+    if (res.status >= 400 && res.status !== 404 && res.status !== 429) {
       throw Error(`[index] Error while fetching: ${res.status}`);
     }
     return false;
