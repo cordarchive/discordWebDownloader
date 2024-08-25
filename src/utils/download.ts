@@ -59,15 +59,17 @@ export async function detectAssets(
 
   const lastIndexFolder = await readLastLines.read(buildLogFile, 1, "utf-8");
 
-  const lastIndex = fs.readFileSync(
-    path.join(rootFolder, "out", lastIndexFolder, "index.html"),
-    {
-      encoding: "utf-8",
+  if (lastIndexFolder !== "") {
+    const lastIndex = fs.readFileSync(
+      path.join(rootFolder, "out", lastIndexFolder, "index.html"),
+      {
+        encoding: "utf-8",
+      }
+    );
+  
+    if (pathname === "index.html" && lastIndex === body) {
+      return;
     }
-  );
-
-  if (pathname === "index.html" && lastIndex === body) {
-    return;
   }
 
   if (regex) {
