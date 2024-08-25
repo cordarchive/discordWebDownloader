@@ -11,7 +11,7 @@ import { determineDownloadUrlOrder } from "@discordWebDownloader/utils/determine
 const getChunkAssets =
   /(?<![g-zA-Z_])([0-9a-f]+): ?"([0-9a-f]{8,})",?(?![g-zA-Z_])/g;
 
-const getMediaAssets = /"([0-9a-f]{8,}\.\w+)"/g;
+const getMediaAssets = /"([0-9a-f]{8,}\.(?:worker\.)?\w+)"/g;
 
 const getBuildNumber = /(?:appVersion|buildNumber|build_number|release)(?:: |=)"(\d+)"/g;
 
