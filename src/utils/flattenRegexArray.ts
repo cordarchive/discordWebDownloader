@@ -8,7 +8,9 @@ export function flattenRegexArray(array: any) {
     } else {
       array[i] = [
         `/assets/${element[1]}.${element[2]}.js`,
+        `/assets/${element[1]}.${element[2]}.worker.js`,
         `/assets/${element[2]}.js`,
+        `/assets/${element[2]}.worker.js`,
       ];
     }
   }
