@@ -96,7 +96,7 @@ export async function fetchAssets(
   let res = await fetchRetry(url);
   let daysBefore = 0;
 
-  while (res.status === 429 || res.status === 500) {
+  while (res.status === 429 || res.status === 500 || res.status === 503) {
     await timer(5000);
     daysBefore = daysBefore + 7;
     const newUrls = determineDownloadUrlOrder(pathname, convertDateToWaybackDate(date, daysBefore), date)
@@ -106,7 +106,7 @@ export async function fetchAssets(
   }
 
   if (!res.ok) {
-    if (res.status >= 400 && res.status !== 404 && res.status !== 429 && res.status !== 500) {
+    if (res.status >= 400 && res.status !== 404 && res.status !== 429 && res.status !== 500 && res.status !== 503) {
       throw Error(`[index] Error while fetching: ${res.status}`);
     }
     return false;
