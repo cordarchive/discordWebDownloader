@@ -13,9 +13,9 @@ const getChunkAssets =
 
 const getMediaAssets = /"([0-9a-f]{8,}\.(?:worker\.)?\w+)"/g;
 
-const getBuildNumber = /(?:appVersion|buildNumber|build_number|release)(?:: |=)"(\d+)"/g;
+const getBuildNumber = /(?:appVersion|buildNumber|build_number|release)(?::|=)"(\d+)"/g;
 
-const getChannel = /(?:environment|releaseStage|releaseChannel)(?:: |=)"(\w+)"/g;
+const getChannel = /(?:environment|releaseStage|releaseChannel)(?::|=)"(\w+)"/g;
 
 /*  TODO: Allowing people to control how precise the search the latter part will be. Default will be 2^3
     This regex should match 7e3:"e893f6ba921a0c8b" and 7e3: "e893f6ba921a0c8b" but not id:"2391042821491529"
