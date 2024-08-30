@@ -56,9 +56,9 @@ export async function parseJS(asset: string, waybackDate?: string) {
   const chunkAssets = await detectAssets(urls, asset, getChunkAssets, date);
   const mediaAssets = await detectAssets(urls, asset, getMediaAssets, date);
   if (chunkAssets) {
-    globalThis.assetsToDownload.push(flattenRegexArray(Array.from(chunkAssets)));
+    globalThis.assetsToDownload.push([...new Set(flattenRegexArray(Array.from(chunkAssets)))]);
   }
   if (mediaAssets) {
-    globalThis.assetsToDownload.push(flattenRegexArray(Array.from(mediaAssets)));
+    globalThis.assetsToDownload.push([...new Set(flattenRegexArray(Array.from(mediaAssets)))]);
   }
 }
